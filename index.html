@@ -1,22 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Physics Cube Simulation</title>
+    <title>Physics Bouncy Simulation</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; }
         canvas {
             display: block;
             background: #f0f0f0;
         }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+        button {
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
+    <div id="ui">
+        <button id="addCube">Add Cube</button>
+        <button id="addCircle">Add Circle</button>
+        <button id="addTriangle">Add Triangle</button>
+        <button id="addCloth">Add Cloth</button>
+        <button id="addBouncyCube">Add Bouncy Cube</button>
+        <button id="addBouncyCircle">Add Bouncy Circle</button>
+        <button id="addBouncyTriangle">Add Bouncy Triangle</button>
+        <button id="addBouncyCloth">Add Bouncy Cloth</button>
+    </div>
     <canvas id="world"></canvas>
     <!-- Include Matter.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script>
         // Alias Matter.js modules
-        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint } = Matter;
+        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Body, Constraint } = Matter;
 
         // Create an engine
         const engine = Engine.create();
@@ -41,25 +60,171 @@
         const runner = Runner.create();
         Runner.run(runner, engine);
 
-        // Create cube
-        const cube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
-            restitution: 0.8,
-            friction: 0.5,
-            render: {
-                fillStyle: '#FF6347',
-            },
-        });
+        // Function to add a cube
+        function addCube() {
+            const cube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#FF6347',
+                },
+            });
+            World.add(world, cube);
+        }
 
-        // Create ground
-        const ground = Bodies.rectangle(window.innerWidth / 2, window.innerHeight + 50, window.innerWidth, 100, {
+        // Function to create a bouncy cube (significantly bouncier and flexier)
+        function addBouncyCube() {
+            const bouncyCube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
+                restitution: 1.2, // Significantly higher restitution for more bounce
+                friction: 0.1, // Lower friction for a bouncy feel
+                render: {
+                    fillStyle: '#FF6347',
+                },
+            });
+            World.add(world, bouncyCube);
+        }
+
+        // Function to add a circle
+        function addCircle() {
+            const circle = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 30, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#4682B4',
+                },
+            });
+            World.add(world, circle);
+        }
+
+        // Function to create a bouncy circle (significantly bouncier and flexier)
+        function addBouncyCircle() {
+            const bouncyCircle = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 30, {
+                restitution: 1.2, // Significantly higher restitution for more bounce
+                friction: 0.1, // Lower friction for a bouncy feel
+                render: {
+                    fillStyle: '#4682B4',
+                },
+            });
+            World.add(world, bouncyCircle);
+        }
+
+        // Function to add a triangle
+        function addTriangle() {
+            const triangle = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 3, 30, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#FFD700',
+                },
+            });
+            World.add(world, triangle);
+        }
+
+        // Function to create a bouncy triangle (significantly bouncier and flexier)
+        function addBouncyTriangle() {
+            const bouncyTriangle = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 3, 30, {
+                restitution: 1.2, // Significantly higher restitution for more bounce
+                friction: 0.1, // Lower friction for a bouncy feel
+                render: {
+                    fillStyle: '#FFD700',
+                },
+            });
+            World.add(world, bouncyTriangle);
+        }
+
+        // Function to create a cloth
+        let cloth = [];
+        function addCloth() {
+            cloth = [];
+            const clothWidth = 5; // Number of columns
+            const clothHeight = 5; // Number of rows
+            const spacing = 40; // Spacing between bodies
+
+            // Create a grid of bodies
+            for (let y = 0; y < clothHeight; y++) {
+                for (let x = 0; x < clothWidth; x++) {
+                    const body = Bodies.rectangle(x * spacing + 200, y * spacing + 100, 20, 20, {
+                        restitution: 0.5,
+                        friction: 0.5,
+                    });
+                    cloth.push(body);
+                    World.add(world, body);
+                }
+            }
+
+            // Create constraints between the bodies to simulate cloth
+            for (let y = 0; y < clothHeight; y++) {
+                for (let x = 0; x < clothWidth; x++) {
+                    if (x < clothWidth - 1) {
+                        const constraint = Constraint.create({
+                            bodyA: cloth[y * clothWidth + x],
+                            bodyB: cloth[y * clothWidth + (x + 1)],
+                            stiffness: 0.2, // Lower stiffness for flexibility
+                        });
+                        World.add(world, constraint);
+                    }
+                    if (y < clothHeight - 1) {
+                        const constraint = Constraint.create({
+                            bodyA: cloth[y * clothWidth + x],
+                            bodyB: cloth[(y + 1) * clothWidth + x],
+                            stiffness: 0.2, // Lower stiffness for flexibility
+                        });
+                        World.add(world, constraint);
+                    }
+                }
+            }
+        }
+
+        // Function to create a bouncy cloth (significantly bouncier and flexier)
+        function addBouncyCloth() {
+            const bouncyCloth = [];
+            const clothWidth = 5; // Number of columns
+            const clothHeight = 5; // Number of rows
+            const spacing = 40; // Spacing between bodies
+
+            // Create a grid of bodies
+            for (let y = 0; y < clothHeight; y++) {
+                for (let x = 0; x < clothWidth; x++) {
+                    const body = Bodies.rectangle(x * spacing + 200, y * spacing + 100, 20, 20, {
+                        restitution: 1.2, // Significantly higher restitution for more bounce
+                        friction: 0.1, // Lower friction for a bouncy feel
+                    });
+                    bouncyCloth.push(body);
+                    World.add(world, body);
+                }
+            }
+
+            // Create constraints between the bodies to simulate bouncy cloth
+            for (let y = 0; y < clothHeight; y++) {
+                for (let x = 0; x < clothWidth; x++) {
+                    if (x < clothWidth - 1) {
+                        const constraint = Constraint.create({
+                            bodyA: bouncyCloth[y * clothWidth + x],
+                            bodyB: bouncyCloth[y * clothWidth + (x + 1)],
+                            stiffness: 0.2, // Lower stiffness for flexibility
+                        });
+                        World.add(world, constraint);
+                    }
+                    if (y < clothHeight - 1) {
+                        const constraint = Constraint.create({
+                            bodyA: bouncyCloth[y * clothWidth + x],
+                            bodyB: bouncyCloth[(y + 1) * clothWidth + x],
+                            stiffness: 0.2, // Lower stiffness for flexibility
+                        });
+                        World.add(world, constraint);
+                    }
+                }
+            }
+        }
+
+        // Add a static floor
+        const floor = Bodies.rectangle(window.innerWidth / 2, window.innerHeight - 20, window.innerWidth, 40, {
             isStatic: true,
             render: {
-                fillStyle: '#2E8B57',
+                fillStyle: '#8B4513',
             },
         });
-
-        // Add bodies to the world
-        World.add(world, [cube, ground]);
+        World.add(world, floor);
 
         // Add mouse control
         const mouse = Mouse.create(render.canvas);
@@ -74,25 +239,32 @@
         World.add(world, mouseConstraint);
         render.mouse = mouse;
 
+        // Add event listeners for buttons
+        document.getElementById('addCube').addEventListener('click', addCube);
+        document.getElementById('addCircle').addEventListener('click', addCircle);
+        document.getElementById('addTriangle').addEventListener('click', addTriangle);
+        document.getElementById('addCloth').addEventListener('click', addCloth);
+        document.getElementById('addBouncyCube').addEventListener('click', addBouncyCube);
+        document.getElementById('addBouncyCircle').addEventListener('click', addBouncyCircle);
+        document.getElementById('addBouncyTriangle').addEventListener('click', addBouncyTriangle);
+        document.getElementById('addBouncyCloth').addEventListener('click', addBouncyCloth);
+
         // Handle window resize
         function resize() {
             render.canvas.width = window.innerWidth;
             render.canvas.height = window.innerHeight;
             render.options.width = window.innerWidth;
             render.options.height = window.innerHeight;
-
-            // Update ground position and size
-            Matter.Body.setPosition(ground, { x: window.innerWidth / 2, y: window.innerHeight + 50 });
-            Matter.Body.setVertices(ground, [
-                { x: 0, y: window.innerHeight },
-                { x: window.innerWidth, y: window.innerHeight },
-                { x: window.innerWidth, y: window.innerHeight + 100 },
-                { x: 0, y: window.innerHeight + 100 },
-            ]);
         }
 
         window.addEventListener('resize', resize);
         resize();
+
+        // Render loop to draw the cloth
+        (function renderLoop() {
+            requestAnimationFrame(renderLoop);
+            Render.world(render);
+        })();
     </script>
 </body>
 </html>
