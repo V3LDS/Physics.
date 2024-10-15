@@ -29,6 +29,8 @@
         <button id="addBouncyCircle">Add Bouncy Circle</button>
         <button id="addBouncyTriangle">Add Bouncy Triangle</button>
         <button id="addBouncyCloth">Add Bouncy Cloth</button>
+        <button id="zoomOut">Zoom Out</button>
+        <button id="add1000Circles">Add 1000 Circles</button>
     </div>
     <canvas id="world"></canvas>
     <!-- Include Matter.js library -->
@@ -72,11 +74,11 @@
             World.add(world, cube);
         }
 
-        // Function to create a bouncy cube (significantly bouncier and flexier)
+        // Function to create a bouncy cube
         function addBouncyCube() {
             const bouncyCube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
-                restitution: 1.2, // Significantly higher restitution for more bounce
-                friction: 0.1, // Lower friction for a bouncy feel
+                restitution: 1.2,
+                friction: 0.1,
                 render: {
                     fillStyle: '#FF6347',
                 },
@@ -96,11 +98,11 @@
             World.add(world, circle);
         }
 
-        // Function to create a bouncy circle (significantly bouncier and flexier)
+        // Function to create a bouncy circle
         function addBouncyCircle() {
             const bouncyCircle = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 30, {
-                restitution: 1.2, // Significantly higher restitution for more bounce
-                friction: 0.1, // Lower friction for a bouncy feel
+                restitution: 1.2,
+                friction: 0.1,
                 render: {
                     fillStyle: '#4682B4',
                 },
@@ -120,11 +122,11 @@
             World.add(world, triangle);
         }
 
-        // Function to create a bouncy triangle (significantly bouncier and flexier)
+        // Function to create a bouncy triangle
         function addBouncyTriangle() {
             const bouncyTriangle = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 3, 30, {
-                restitution: 1.2, // Significantly higher restitution for more bounce
-                friction: 0.1, // Lower friction for a bouncy feel
+                restitution: 1.2,
+                friction: 0.1,
                 render: {
                     fillStyle: '#FFD700',
                 },
@@ -159,7 +161,7 @@
                         const constraint = Constraint.create({
                             bodyA: cloth[y * clothWidth + x],
                             bodyB: cloth[y * clothWidth + (x + 1)],
-                            stiffness: 0.2, // Lower stiffness for flexibility
+                            stiffness: 0.2,
                         });
                         World.add(world, constraint);
                     }
@@ -167,7 +169,7 @@
                         const constraint = Constraint.create({
                             bodyA: cloth[y * clothWidth + x],
                             bodyB: cloth[(y + 1) * clothWidth + x],
-                            stiffness: 0.2, // Lower stiffness for flexibility
+                            stiffness: 0.2,
                         });
                         World.add(world, constraint);
                     }
@@ -175,7 +177,7 @@
             }
         }
 
-        // Function to create a bouncy cloth (significantly bouncier and flexier)
+        // Function to create a bouncy cloth
         function addBouncyCloth() {
             const bouncyCloth = [];
             const clothWidth = 5; // Number of columns
@@ -186,8 +188,8 @@
             for (let y = 0; y < clothHeight; y++) {
                 for (let x = 0; x < clothWidth; x++) {
                     const body = Bodies.rectangle(x * spacing + 200, y * spacing + 100, 20, 20, {
-                        restitution: 1.2, // Significantly higher restitution for more bounce
-                        friction: 0.1, // Lower friction for a bouncy feel
+                        restitution: 1.2,
+                        friction: 0.1,
                     });
                     bouncyCloth.push(body);
                     World.add(world, body);
@@ -201,7 +203,7 @@
                         const constraint = Constraint.create({
                             bodyA: bouncyCloth[y * clothWidth + x],
                             bodyB: bouncyCloth[y * clothWidth + (x + 1)],
-                            stiffness: 0.2, // Lower stiffness for flexibility
+                            stiffness: 0.2,
                         });
                         World.add(world, constraint);
                     }
@@ -209,12 +211,35 @@
                         const constraint = Constraint.create({
                             bodyA: bouncyCloth[y * clothWidth + x],
                             bodyB: bouncyCloth[(y + 1) * clothWidth + x],
-                            stiffness: 0.2, // Lower stiffness for flexibility
+                            stiffness: 0.2,
                         });
                         World.add(world, constraint);
                     }
                 }
             }
+        }
+
+        // Function to zoom out
+        function zoomOut() {
+            render.options.width *= 1.1; // Increase width by 10%
+            render.options.height *= 1.1; // Increase height by 10%
+            render.canvas.width = render.options.width;
+            render.canvas.height = render.options.height;
+            Render.setPixelRatio(render, window.devicePixelRatio);
+        }
+
+        // Function to add 1000 circles gradually
+        function add1000Circles() {
+            let count = 0;
+            const totalCircles = 1000;
+            const interval = setInterval(() => {
+                if (count < totalCircles) {
+                    addBouncyCircle(); // Add a bouncy circle
+                    count++;
+                } else {
+                    clearInterval(interval); // Stop adding circles when done
+                }
+            }, 50); // Add a circle every 50 milliseconds
         }
 
         // Add a static floor
@@ -248,6 +273,8 @@
         document.getElementById('addBouncyCircle').addEventListener('click', addBouncyCircle);
         document.getElementById('addBouncyTriangle').addEventListener('click', addBouncyTriangle);
         document.getElementById('addBouncyCloth').addEventListener('click', addBouncyCloth);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        document.getElementById('add1000Circles').addEventListener('click', add1000Circles);
 
         // Handle window resize
         function resize() {
