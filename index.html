@@ -226,10 +226,20 @@
         // Function to handle zooming based on slider value
         function handleZoom() {
             const zoomLevel = document.getElementById('zoomSlider').value;
-            render.options.width = window.innerWidth * zoomLevel; // Adjust width based on zoom level
-            render.options.height = window.innerHeight * zoomLevel; // Adjust height based on zoom level
-            render.canvas.width = render.options.width;
-            render.canvas.height = render.options.height;
+            const newWidth = window.innerWidth * zoomLevel; // Adjust width based on zoom level
+            const newHeight = window.innerHeight * zoomLevel; // Adjust height based on zoom level
+            
+            // Update the canvas size
+            render.canvas.width = newWidth;
+            render.canvas.height = newHeight;
+            render.options.width = newWidth;
+            render.options.height = newHeight;
+
+            // Adjust the position of the bodies based on zoom level
+            engine.world.bodies.forEach(body => {
+                Body.scale(body, zoomLevel, zoomLevel);
+            });
+
             Render.setPixelRatio(render, window.devicePixelRatio);
         }
 
