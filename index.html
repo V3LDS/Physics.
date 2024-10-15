@@ -17,6 +17,9 @@
         button {
             margin: 5px;
         }
+        input[type="range"] {
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
@@ -29,7 +32,8 @@
         <button id="addBouncyCircle">Add Bouncy Circle</button>
         <button id="addBouncyTriangle">Add Bouncy Triangle</button>
         <button id="addBouncyCloth">Add Bouncy Cloth</button>
-        <button id="zoomOut">Zoom Out</button>
+        <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+        <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
     </div>
     <canvas id="world"></canvas>
@@ -219,10 +223,11 @@
             }
         }
 
-        // Function to zoom out
-        function zoomOut() {
-            render.options.width *= 1.1; // Increase width by 10%
-            render.options.height *= 1.1; // Increase height by 10%
+        // Function to handle zooming based on slider value
+        function handleZoom() {
+            const zoomLevel = document.getElementById('zoomSlider').value;
+            render.options.width = window.innerWidth * zoomLevel; // Adjust width based on zoom level
+            render.options.height = window.innerHeight * zoomLevel; // Adjust height based on zoom level
             render.canvas.width = render.options.width;
             render.canvas.height = render.options.height;
             Render.setPixelRatio(render, window.devicePixelRatio);
@@ -264,7 +269,7 @@
         World.add(world, mouseConstraint);
         render.mouse = mouse;
 
-        // Add event listeners for buttons
+        // Add event listeners for buttons and slider
         document.getElementById('addCube').addEventListener('click', addCube);
         document.getElementById('addCircle').addEventListener('click', addCircle);
         document.getElementById('addTriangle').addEventListener('click', addTriangle);
@@ -273,7 +278,7 @@
         document.getElementById('addBouncyCircle').addEventListener('click', addBouncyCircle);
         document.getElementById('addBouncyTriangle').addEventListener('click', addBouncyTriangle);
         document.getElementById('addBouncyCloth').addEventListener('click', addBouncyCloth);
-        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        document.getElementById('zoomSlider').addEventListener('input', handleZoom);
         document.getElementById('add1000Circles').addEventListener('click', add1000Circles);
 
         // Handle window resize
