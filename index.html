@@ -40,6 +40,7 @@
         <button id="disableDelete">Disable Delete Mode</button> <!-- New button for disabling delete mode -->
         <button id="addTNT">Add TNT Block</button> <!-- New button for adding TNT block -->
         <button id="addDelayedTNT">Add Delayed TNT Block</button> <!-- New button for adding delayed TNT block -->
+        <button id="addRagdoll">Add Ragdoll</button> <!-- New button for adding ragdoll -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -643,6 +644,93 @@
 
         // Add event listener for regular TNT block button
         document.getElementById('addTNT').addEventListener('click', addTNT);
+
+        // Function to add a ragdoll stick figure
+        function addRagdoll() {
+            const head = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2 - 50, 15, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#FFD700', // Color of the head
+                },
+            });
+
+            const body = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2 + 10, 10, 40, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#4682B4', // Color of the body
+                },
+            });
+
+            const leftArm = Bodies.rectangle(window.innerWidth / 2 - 20, window.innerHeight / 2 + 10, 10, 30, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#4682B4', // Color of the left arm
+                },
+            });
+
+            const rightArm = Bodies.rectangle(window.innerWidth / 2 + 20, window.innerHeight / 2 + 10, 10, 30, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#4682B4', // Color of the right arm
+                },
+            });
+
+            const leftLeg = Bodies.rectangle(window.innerWidth / 2 - 10, window.innerHeight / 2 + 50, 10, 30, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#4682B4', // Color of the left leg
+                },
+            });
+
+            const rightLeg = Bodies.rectangle(window.innerWidth / 2 + 10, window.innerHeight / 2 + 50, 10, 30, {
+                restitution: 0.5,
+                render: {
+                    fillStyle: '#4682B4', // Color of the right leg
+                },
+            });
+
+            // Create constraints to connect the limbs to the body
+            const headConstraint = Constraint.create({
+                bodyA: head,
+                bodyB: body,
+                pointB: { x: 0, y: -20 },
+                stiffness: 0.5,
+            });
+
+            const leftArmConstraint = Constraint.create({
+                bodyA: leftArm,
+                bodyB: body,
+                pointB: { x: -5, y: 10 },
+                stiffness: 0.5,
+            });
+
+            const rightArmConstraint = Constraint.create({
+                bodyA: rightArm,
+                bodyB: body,
+                pointB: { x: 5, y: 10 },
+                stiffness: 0.5,
+            });
+
+            const leftLegConstraint = Constraint.create({
+                bodyA: leftLeg,
+                bodyB: body,
+                pointB: { x: -5, y: 30 },
+                stiffness: 0.5,
+            });
+
+            const rightLegConstraint = Constraint.create({
+                bodyA: rightLeg,
+                bodyB: body,
+                pointB: { x: 5, y: 30 },
+                stiffness: 0.5,
+            });
+
+            // Add all parts to the world
+            World.add(world, [head, body, leftArm, rightArm, leftLeg, rightLeg, headConstraint, leftArmConstraint, rightArmConstraint, leftLegConstraint, rightLegConstraint]);
+        }
+
+        // Add event listener for the ragdoll button
+        document.getElementById('addRagdoll').addEventListener('click', addRagdoll); // Add this line to bind the button
     </script>
 </body>
 </html>
