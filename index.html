@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Physics Bouncy Simulation</title>
+    <title>Physics Bouncy Simulation with Fire</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; }
         canvas {
@@ -66,6 +66,25 @@
         const runner = Runner.create();
         Runner.run(runner, engine);
 
+        // Fire particles array
+        const fireParticles = [];
+
+        // Function to create fire particles
+        function createFire(x, y) {
+            const particleCount = 10; // Number of fire particles
+            for (let i = 0; i < particleCount; i++) {
+                const particle = Bodies.circle(x, y, Math.random() * 5 + 2, {
+                    restitution: 0.5,
+                    friction: 0.1,
+                    render: {
+                        fillStyle: 'rgba(255, 165, 0, 0.8)', // Orange color for fire
+                    },
+                });
+                fireParticles.push(particle);
+                World.add(world, particle);
+            }
+        }
+
         // Function to add a cube
         function addCube() {
             const cube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
@@ -76,6 +95,7 @@
                 },
             });
             World.add(world, cube);
+            createFire(cube.position.x, cube.position.y); // Create fire when cube is added
         }
 
         // Function to create a bouncy cube
@@ -88,6 +108,7 @@
                 },
             });
             World.add(world, bouncyCube);
+            createFire(bouncyCube.position.x, bouncyCube.position.y); // Create fire when bouncy cube is added
         }
 
         // Function to add a circle
@@ -100,6 +121,7 @@
                 },
             });
             World.add(world, circle);
+            createFire(circle.position.x, circle.position.y); // Create fire when circle is added
         }
 
         // Function to create a bouncy circle
@@ -112,6 +134,7 @@
                 },
             });
             World.add(world, bouncyCircle);
+            createFire(bouncyCircle.position.x, bouncyCircle.position.y); // Create fire when bouncy circle is added
         }
 
         // Function to add a triangle
@@ -124,6 +147,7 @@
                 },
             });
             World.add(world, triangle);
+            createFire(triangle.position.x, triangle.position.y); // Create fire when triangle is added
         }
 
         // Function to create a bouncy triangle
@@ -136,6 +160,7 @@
                 },
             });
             World.add(world, bouncyTriangle);
+            createFire(bouncyTriangle.position.x, bouncyTriangle.position.y); // Create fire when bouncy triangle is added
         }
 
         // Function to create a cloth
@@ -155,6 +180,7 @@
                     });
                     cloth.push(body);
                     World.add(world, body);
+                    createFire(body.position.x, body.position.y); // Create fire when cloth is added
                 }
             }
 
@@ -197,6 +223,7 @@
                     });
                     bouncyCloth.push(body);
                     World.add(world, body);
+                    createFire(body.position.x, body.position.y); // Create fire when bouncy cloth is added
                 }
             }
 
@@ -234,11 +261,6 @@
             render.canvas.height = newHeight;
             render.options.width = newWidth;
             render.options.height = newHeight;
-
-            // Adjust the position of the bodies based on zoom level
-            engine.world.bodies.forEach(body => {
-                Body.scale(body, zoomLevel, zoomLevel);
-            });
 
             Render.setPixelRatio(render, window.devicePixelRatio);
         }
@@ -302,10 +324,21 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Render loop to draw the cloth
+        // Render loop to draw the cloth and fire particles
         (function renderLoop() {
             requestAnimationFrame(renderLoop);
             Render.world(render);
+
+            // Draw fire particles
+            fireParticles.forEach(particle => {
+                if (particle) {
+                    const context = render.context;
+                    context.beginPath();
+                    context.arc(particle.position.x, particle.position.y, particle.circleRadius, 0, Math.PI * 2);
+                    context.fillStyle = particle.render.fillStyle;
+                    context.fill();
+                }
+            });
         })();
     </script>
 </body>
