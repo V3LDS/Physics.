@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Physics Bouncy Simulation with Fire</title>
+    <title>Physics Bouncy Simulation with Drawing Tool</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; }
         canvas {
@@ -32,7 +32,10 @@
         <button id="addBouncyCircle">Add Bouncy Circle</button>
         <button id="addBouncyTriangle">Add Bouncy Triangle</button>
         <button id="addBouncyCloth">Add Bouncy Cloth</button>
-        <button id="addBlockOnFire">Add Block on Fire</button> <!-- New button -->
+        <button id="addWalls">Add Walls</button>
+        <button id="scaleDown">Scale Down Shapes</button>
+        <button id="enableDraw">Enable Drawing Mode</button> <!-- New button for enabling drawing -->
+        <button id="disableDraw">Disable Drawing Mode</button> <!-- New button for disabling drawing -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -42,7 +45,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script>
         // Alias Matter.js modules
-        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Body, Constraint } = Matter;
+        const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Body, Constraint, Composite } = Matter;
 
         // Create an engine
         const engine = Engine.create();
@@ -67,23 +70,100 @@
         const runner = Runner.create();
         Runner.run(runner, engine);
 
-        // Fire particles array
-        const fireParticles = [];
+        // Drawing variables
+        let isDrawing = false;
+        let drawPath = [];
 
-        // Function to create fire particles
-        function createFire(x, y) {
-            const particleCount = 10; // Number of fire particles
-            for (let i = 0; i < particleCount; i++) {
-                const particle = Bodies.circle(x, y, Math.random() * 5 + 2, {
-                    restitution: 0.5,
-                    friction: 0.1,
-                    render: {
-                        fillStyle: 'rgba(255, 165, 0, 0.8)', // Orange color for fire
-                    },
+        // Function to start drawing
+        function startDrawing(event) {
+            isDrawing = true;
+            drawPath = []; // Reset the path
+            const mousePos = getMousePos(event);
+            drawPath.push(mousePos);
+        }
+
+        // Function to draw on the canvas
+        function draw(event) {
+            if (!isDrawing) return;
+            const mousePos = getMousePos(event);
+            drawPath.push(mousePos);
+            const context = canvas.getContext('2d');
+            context.lineWidth = 2;
+            context.strokeStyle = 'black';
+            context.lineJoin = 'round';
+            context.beginPath();
+            context.moveTo(drawPath[drawPath.length - 2].x, drawPath[drawPath.length - 2].y);
+            context.lineTo(mousePos.x, mousePos.y);
+            context.stroke();
+        }
+
+        // Function to stop drawing and create a static shape
+        function stopDrawing() {
+            isDrawing = false;
+            if (drawPath.length > 0) {
+                const vertices = drawPath.map(point => {
+                    return { x: point.x, y: point.y };
                 });
-                fireParticles.push(particle);
-                World.add(world, particle);
+                const shape = Bodies.fromVertices(drawPath[0].x, drawPath[0].y, vertices, { isStatic: true });
+                World.add(world, shape);
             }
+            clearCanvas(); // Clear the canvas after creating the shape
+        }
+
+        // Function to get mouse position
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            const context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Function to enable drawing mode
+        function enableDrawing() {
+            clearCanvas(); // Clear the canvas when entering draw mode
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+        }
+
+        // Function to disable drawing mode
+        function disableDrawing() {
+            canvas.removeEventListener('mousedown', startDrawing);
+            canvas.removeEventListener('mousemove', draw);
+            canvas.removeEventListener('mouseup', stopDrawing);
+        }
+
+        // Function to add walls around the screen
+        function addWalls() {
+            const wallThickness = 20; // Thickness of the walls
+
+            // Create walls
+            const topWall = Bodies.rectangle(window.innerWidth / 2, 0, window.innerWidth, wallThickness, { isStatic: true });
+            const bottomWall = Bodies.rectangle(window.innerWidth / 2, window.innerHeight, window.innerWidth, wallThickness, { isStatic: true });
+            const leftWall = Bodies.rectangle(0, window.innerHeight / 2, wallThickness, window.innerHeight, { isStatic: true });
+            const rightWall = Bodies.rectangle(window.innerWidth, window.innerHeight / 2, wallThickness, window.innerHeight, { isStatic: true });
+
+            // Add walls to the world
+            World.add(world, [topWall, bottomWall, leftWall, rightWall]);
+        }
+
+        // Function to scale down all shapes by 50%
+        function scaleDownShapes() {
+            const bodies = Composite.allBodies(world); // Get all bodies in the world
+            bodies.forEach(body => {
+                if (!body.isStatic) { // Only scale non-static bodies
+                    const scaleFactor = 0.5;
+                    // Scale the body
+                    Body.scale(body, scaleFactor, scaleFactor);
+                }
+            });
         }
 
         // Function to add a cube
@@ -96,7 +176,6 @@
                 },
             });
             World.add(world, cube);
-            createFire(cube.position.x, cube.position.y); // Create fire when cube is added
         }
 
         // Function to create a bouncy cube
@@ -109,7 +188,6 @@
                 },
             });
             World.add(world, bouncyCube);
-            createFire(bouncyCube.position.x, bouncyCube.position.y); // Create fire when bouncy cube is added
         }
 
         // Function to add a circle
@@ -122,7 +200,6 @@
                 },
             });
             World.add(world, circle);
-            createFire(circle.position.x, circle.position.y); // Create fire when circle is added
         }
 
         // Function to create a bouncy circle
@@ -135,7 +212,6 @@
                 },
             });
             World.add(world, bouncyCircle);
-            createFire(bouncyCircle.position.x, bouncyCircle.position.y); // Create fire when bouncy circle is added
         }
 
         // Function to add a triangle
@@ -148,7 +224,6 @@
                 },
             });
             World.add(world, triangle);
-            createFire(triangle.position.x, triangle.position.y); // Create fire when triangle is added
         }
 
         // Function to create a bouncy triangle
@@ -161,20 +236,6 @@
                 },
             });
             World.add(world, bouncyTriangle);
-            createFire(bouncyTriangle.position.x, bouncyTriangle.position.y); // Create fire when bouncy triangle is added
-        }
-
-        // Function to create a block on fire
-        function addBlockOnFire() {
-            const fireCube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
-                restitution: 0.5,
-                friction: 0.5,
-                render: {
-                    fillStyle: '#FF6347',
-                },
-            });
-            World.add(world, fireCube);
-            createFire(fireCube.position.x, fireCube.position.y); // Create fire when block is added
         }
 
         // Function to create a cloth
@@ -194,7 +255,6 @@
                     });
                     cloth.push(body);
                     World.add(world, body);
-                    createFire(body.position.x, body.position.y); // Create fire when cloth is added
                 }
             }
 
@@ -237,7 +297,6 @@
                     });
                     bouncyCloth.push(body);
                     World.add(world, body);
-                    createFire(body.position.x, body.position.y); // Create fire when bouncy cloth is added
                 }
             }
 
@@ -324,7 +383,10 @@
         document.getElementById('addBouncyCircle').addEventListener('click', addBouncyCircle);
         document.getElementById('addBouncyTriangle').addEventListener('click', addBouncyTriangle);
         document.getElementById('addBouncyCloth').addEventListener('click', addBouncyCloth);
-        document.getElementById('addBlockOnFire').addEventListener('click', addBlockOnFire); // New event listener
+        document.getElementById('addWalls').addEventListener('click', addWalls); // Event listener for adding walls
+        document.getElementById('scaleDown').addEventListener('click', scaleDownShapes); // Event listener for scaling down shapes
+        document.getElementById('enableDraw').addEventListener('click', enableDrawing); // Event listener for enabling drawing
+        document.getElementById('disableDraw').addEventListener('click', disableDrawing); // Event listener for disabling drawing
         document.getElementById('zoomSlider').addEventListener('input', handleZoom);
         document.getElementById('add1000Circles').addEventListener('click', add1000Circles);
 
@@ -339,21 +401,10 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Render loop to draw the cloth and fire particles
+        // Render loop
         (function renderLoop() {
             requestAnimationFrame(renderLoop);
             Render.world(render);
-
-            // Draw fire particles
-            fireParticles.forEach(particle => {
-                if (particle) {
-                    const context = render.context;
-                    context.beginPath();
-                    context.arc(particle.position.x, particle.position.y, particle.circleRadius, 0, Math.PI * 2);
-                    context.fillStyle = particle.render.fillStyle;
-                    context.fill();
-                }
-            });
         })();
     </script>
 </body>
