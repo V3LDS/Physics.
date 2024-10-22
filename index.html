@@ -32,6 +32,7 @@
         <button id="addBouncyCircle">Add Bouncy Circle</button>
         <button id="addBouncyTriangle">Add Bouncy Triangle</button>
         <button id="addBouncyCloth">Add Bouncy Cloth</button>
+        <button id="addBlockOnFire">Add Block on Fire</button> <!-- New button -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -161,6 +162,19 @@
             });
             World.add(world, bouncyTriangle);
             createFire(bouncyTriangle.position.x, bouncyTriangle.position.y); // Create fire when bouncy triangle is added
+        }
+
+        // Function to create a block on fire
+        function addBlockOnFire() {
+            const fireCube = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 60, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#FF6347',
+                },
+            });
+            World.add(world, fireCube);
+            createFire(fireCube.position.x, fireCube.position.y); // Create fire when block is added
         }
 
         // Function to create a cloth
@@ -310,6 +324,7 @@
         document.getElementById('addBouncyCircle').addEventListener('click', addBouncyCircle);
         document.getElementById('addBouncyTriangle').addEventListener('click', addBouncyTriangle);
         document.getElementById('addBouncyCloth').addEventListener('click', addBouncyCloth);
+        document.getElementById('addBlockOnFire').addEventListener('click', addBlockOnFire); // New event listener
         document.getElementById('zoomSlider').addEventListener('input', handleZoom);
         document.getElementById('add1000Circles').addEventListener('click', add1000Circles);
 
