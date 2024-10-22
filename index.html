@@ -39,6 +39,7 @@
         <button id="enableDelete">Enable Delete Mode</button> <!-- New button for enabling delete mode -->
         <button id="disableDelete">Disable Delete Mode</button> <!-- New button for disabling delete mode -->
         <button id="addTNT">Add TNT Block</button> <!-- New button for adding TNT block -->
+        <button id="addDelayedTNT">Add Delayed TNT Block</button> <!-- New button for adding delayed TNT block -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -443,40 +444,6 @@
             Render.world(render);
         })();
 
-        // Function to add a TNT block
-        function addTNT() {
-            const tntBlock = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 40, 40, {
-                restitution: 0.5,
-                friction: 0.5,
-                render: {
-                    fillStyle: '#FF0000', // Red color for TNT
-                },
-            });
-            World.add(world, tntBlock);
-            tntBlock.clickCount = 0; // Initialize click count
-            tntBlock.lastClickTime = 0; // Initialize last click time
-
-            // Add click event listener for TNT block
-            canvas.addEventListener('click', function(event) {
-                const mousePos = getMousePos(event);
-                if (Matter.Bounds.contains(tntBlock.bounds, mousePos)) {
-                    const currentTime = Date.now();
-                    // Check if the click is within 1 second
-                    if (currentTime - tntBlock.lastClickTime <= 1000) {
-                        tntBlock.clickCount++;
-                    } else {
-                        tntBlock.clickCount = 1; // Reset count if more than 1 second has passed
-                    }
-                    tntBlock.lastClickTime = currentTime;
-
-                    // Check if clicked 5 times
-                    if (tntBlock.clickCount >= 5) {
-                        explodeTNT(tntBlock); // Call explode function
-                    }
-                }
-            });
-        }
-
         // Function to handle TNT explosion
         function explodeTNT(tntBlock) {
             // Remove TNT block
@@ -505,6 +472,80 @@
 
             // Create smoke particles
             createSmokeParticles(tntBlock.position);
+
+            // Check for nearby TNT blocks to trigger chain reaction
+            triggerChainReaction(tntBlock.position);
+        }
+
+        // Function to trigger chain reaction
+        function triggerChainReaction(position) {
+            const explosionRadius = 100; // Define the radius for chain reaction
+            const bodies = Composite.allBodies(world); // Get all bodies in the world
+
+            bodies.forEach(body => {
+                if (body.label === 'TNT' && body.position) {
+                    const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, position));
+                    if (distance < explosionRadius) {
+                        // Trigger explosion for nearby TNT blocks
+                        explodeTNT(body);
+                    }
+                }
+            });
+        }
+
+        // Function to add a delayed TNT block
+        function addDelayedTNT() {
+            const delayedTNT = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 40, 40, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#00FF00', // Green color for delayed TNT
+                    strokeStyle: '#FF0000', // Red stripe
+                    lineWidth: 5,
+                },
+                label: 'Delayed TNT', // Label for identification
+            });
+            World.add(world, delayedTNT);
+
+            // Set a timeout to explode after 5 seconds
+            setTimeout(() => {
+                explodeTNT(delayedTNT);
+            }, 5000); // 5000 milliseconds = 5 seconds
+        }
+
+        // Function to add a regular TNT block
+        function addTNT() {
+            const tntBlock = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 40, 40, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#FF0000', // Red color for TNT
+                },
+                label: 'TNT', // Label for identification
+            });
+            World.add(world, tntBlock);
+            tntBlock.clickCount = 0; // Initialize click count
+            tntBlock.lastClickTime = 0; // Initialize last click time
+
+            // Add click event listener for TNT block
+            canvas.addEventListener('click', function(event) {
+                const mousePos = getMousePos(event);
+                if (Matter.Bounds.contains(tntBlock.bounds, mousePos)) {
+                    const currentTime = Date.now();
+                    // Check if the click is within 1 second
+                    if (currentTime - tntBlock.lastClickTime <= 1000) {
+                        tntBlock.clickCount++;
+                    } else {
+                        tntBlock.clickCount = 1; // Reset count if more than 1 second has passed
+                    }
+                    tntBlock.lastClickTime = currentTime;
+
+                    // Check if clicked 5 times
+                    if (tntBlock.clickCount >= 5) {
+                        explodeTNT(tntBlock); // Call explode function
+                    }
+                }
+            });
         }
 
         // Function to create explosion effect
@@ -596,7 +637,10 @@
             }, shakeDuration);
         }
 
-        // Add event listener for TNT block button
+        // Add event listener for delayed TNT block button
+        document.getElementById('addDelayedTNT').addEventListener('click', addDelayedTNT);
+
+        // Add event listener for regular TNT block button
         document.getElementById('addTNT').addEventListener('click', addTNT);
     </script>
 </body>
