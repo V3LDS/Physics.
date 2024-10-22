@@ -41,6 +41,8 @@
         <button id="addTNT">Add TNT Block</button> <!-- New button for adding TNT block -->
         <button id="addDelayedTNT">Add Delayed TNT Block</button> <!-- New button for adding delayed TNT block -->
         <button id="addRagdoll">Add Ragdoll</button> <!-- New button for adding ragdoll -->
+        <button id="randomBackground">Random BackgroundWORKINPROGRESS</button> <!-- New button for random background -->
+        <button id="thingsToAdd">Things I Want to Add</button> <!-- New button for showing the list -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -731,6 +733,34 @@
 
         // Add event listener for the ragdoll button
         document.getElementById('addRagdoll').addEventListener('click', addRagdoll); // Add this line to bind the button
+
+        // Function to change background to a random color
+        function changeBackground() {
+            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16); // Generate random hex color
+            document.body.style.backgroundColor = randomColor; // Change background color
+        }
+
+        // Add event listener for the random background button
+        document.getElementById('randomBackground').addEventListener('click', changeBackground);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to change background to a random color
+            function changeBackground() {
+                const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16); // Generate random hex color
+                document.body.style.backgroundColor = randomColor; // Change background color
+            }
+
+            // Add event listener for the random background button
+            document.getElementById('randomBackground').addEventListener('click', changeBackground);
+        });
+
+        // Function to show the popup message
+        function showThingsToAdd() {
+            alert("Hi Physics Player! I would like to show you this list of things I want to add:\n- Better Ragdoll\n- More TNT\n- A better UI\n- I really want to add Multiplayer but that'll be a while to add.\nThanks and Happy Playing!");
+        }
+
+        // Add event listener for the new button
+        document.getElementById('thingsToAdd').addEventListener('click', showThingsToAdd);
     </script>
 </body>
 </html>
