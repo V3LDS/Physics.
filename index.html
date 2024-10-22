@@ -36,6 +36,9 @@
         <button id="scaleDown">Scale Down Shapes</button>
         <button id="enableDraw">Enable Drawing Mode</button> <!-- New button for enabling drawing -->
         <button id="disableDraw">Disable Drawing Mode</button> <!-- New button for disabling drawing -->
+        <button id="enableDelete">Enable Delete Mode</button> <!-- New button for enabling delete mode -->
+        <button id="disableDelete">Disable Delete Mode</button> <!-- New button for disabling delete mode -->
+        <button id="addTNT">Add TNT Block</button> <!-- New button for adding TNT block -->
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
@@ -374,6 +377,39 @@
         World.add(world, mouseConstraint);
         render.mouse = mouse;
 
+        // Delete mode variable
+        let isDeleteMode = false;
+
+        // Function to enable delete mode
+        function enableDelete() {
+            isDeleteMode = true; // Set delete mode to true
+            canvas.addEventListener('click', deleteBody); // Add click event listener for deleting bodies
+        }
+
+        // Function to disable delete mode
+        function disableDelete() {
+            isDeleteMode = false; // Set delete mode to false
+            canvas.removeEventListener('click', deleteBody); // Remove click event listener
+        }
+
+        // Function to delete a body on click
+        function deleteBody(event) {
+            if (!isDeleteMode) return; // Only delete if in delete mode
+            const mousePos = getMousePos(event);
+            const bodies = Composite.allBodies(world); // Get all bodies in the world
+
+            // Check if any body is clicked
+            bodies.forEach(body => {
+                if (Matter.Bounds.contains(body.bounds, mousePos)) {
+                    World.remove(world, body); // Remove the body from the world
+                }
+            });
+        }
+
+        // Add event listeners for delete mode buttons
+        document.getElementById('enableDelete').addEventListener('click', enableDelete);
+        document.getElementById('disableDelete').addEventListener('click', disableDelete);
+
         // Add event listeners for buttons and slider
         document.getElementById('addCube').addEventListener('click', addCube);
         document.getElementById('addCircle').addEventListener('click', addCircle);
@@ -406,6 +442,162 @@
             requestAnimationFrame(renderLoop);
             Render.world(render);
         })();
+
+        // Function to add a TNT block
+        function addTNT() {
+            const tntBlock = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 40, 40, {
+                restitution: 0.5,
+                friction: 0.5,
+                render: {
+                    fillStyle: '#FF0000', // Red color for TNT
+                },
+            });
+            World.add(world, tntBlock);
+            tntBlock.clickCount = 0; // Initialize click count
+            tntBlock.lastClickTime = 0; // Initialize last click time
+
+            // Add click event listener for TNT block
+            canvas.addEventListener('click', function(event) {
+                const mousePos = getMousePos(event);
+                if (Matter.Bounds.contains(tntBlock.bounds, mousePos)) {
+                    const currentTime = Date.now();
+                    // Check if the click is within 1 second
+                    if (currentTime - tntBlock.lastClickTime <= 1000) {
+                        tntBlock.clickCount++;
+                    } else {
+                        tntBlock.clickCount = 1; // Reset count if more than 1 second has passed
+                    }
+                    tntBlock.lastClickTime = currentTime;
+
+                    // Check if clicked 5 times
+                    if (tntBlock.clickCount >= 5) {
+                        explodeTNT(tntBlock); // Call explode function
+                    }
+                }
+            });
+        }
+
+        // Function to handle TNT explosion
+        function explodeTNT(tntBlock) {
+            // Remove TNT block
+            World.remove(world, tntBlock); 
+
+            // Shake effect
+            shakeScreen();
+
+            // Apply knockback force to nearby bodies
+            const bodies = Composite.allBodies(world); // Get all bodies in the world
+            const explosionRadius = 100; // Define the radius for the explosion effect
+            const forceMagnitude = 0.1; // Increased force magnitude for stronger knockback
+
+            bodies.forEach(body => {
+                // Check if the body is within the explosion radius
+                const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, tntBlock.position));
+                if (body !== tntBlock && distance < explosionRadius) {
+                    // Calculate direction and apply force
+                    const direction = Matter.Vector.normalise(Matter.Vector.sub(body.position, tntBlock.position));
+                    Body.applyForce(body, body.position, Matter.Vector.mult(direction, forceMagnitude * body.mass)); // Apply stronger force based on mass
+                }
+            });
+
+            // Create explosion effect
+            createExplosionEffect(tntBlock.position);
+
+            // Create smoke particles
+            createSmokeParticles(tntBlock.position);
+        }
+
+        // Function to create explosion effect
+        function createExplosionEffect(position) {
+            const explosionCount = 20; // Number of explosion particles
+            for (let i = 0; i < explosionCount; i++) {
+                const explosionParticle = Bodies.circle(position.x, position.y, 15, { // Size of explosion particles
+                    restitution: 0.5,
+                    friction: 0.1,
+                    render: {
+                        fillStyle: 'rgba(255, 165, 0, 0.8)', // Orange color for explosion
+                    },
+                });
+                World.add(world, explosionParticle);
+
+                // Apply an outward force to the explosion particle
+                const angle = Math.random() * Math.PI * 2; // Random angle for explosion direction
+                const forceMagnitude = 0.1; // Force magnitude for explosion particles
+                const outwardForce = { x: Math.cos(angle) * forceMagnitude, y: Math.sin(angle) * forceMagnitude };
+                Body.applyForce(explosionParticle, explosionParticle.position, outwardForce);
+
+                // Set a timeout to remove the explosion particle after a short duration
+                setTimeout(() => {
+                    // Gradually reduce opacity before removal
+                    let opacity = 0.8; // Initial opacity
+                    const fadeOutInterval = setInterval(() => {
+                        opacity -= 0.05; // Decrease opacity
+                        if (opacity <= 0) {
+                            clearInterval(fadeOutInterval);
+                            World.remove(world, explosionParticle); // Remove particle when fully faded
+                        } else {
+                            explosionParticle.render.fillStyle = `rgba(255, 165, 0, ${opacity})`; // Update particle color with new opacity
+                        }
+                    }, 100); // Fade out interval
+                }, 500); // Start fading after 500 milliseconds
+            }
+        }
+
+        // Function to create smoke particles
+        function createSmokeParticles(position) {
+            const smokeCount = 20; // Increased number of smoke particles
+            for (let i = 0; i < smokeCount; i++) {
+                const smokeParticle = Bodies.circle(position.x, position.y, 10, { // Increased size of smoke particles
+                    restitution: 0.5,
+                    friction: 0.1,
+                    render: {
+                        fillStyle: 'rgba(169, 169, 169, 0.7)', // Gray color for smoke
+                    },
+                });
+                World.add(world, smokeParticle);
+
+                // Apply an upward force to the smoke particle with some random horizontal movement
+                const upwardForce = { x: (Math.random() - 0.5) * 0.02, y: -0.05 - Math.random() * 0.02 }; // Random horizontal and upward force
+                Body.applyForce(smokeParticle, smokeParticle.position, upwardForce);
+
+                // Set a timeout to remove the smoke particle after a short duration
+                setTimeout(() => {
+                    // Gradually reduce opacity before removal
+                    let opacity = 0.7; // Initial opacity
+                    const fadeOutInterval = setInterval(() => {
+                        opacity -= 0.05; // Decrease opacity
+                        if (opacity <= 0) {
+                            clearInterval(fadeOutInterval);
+                            World.remove(world, smokeParticle); // Remove particle when fully faded
+                        } else {
+                            smokeParticle.render.fillStyle = `rgba(169, 169, 169, ${opacity})`; // Update particle color with new opacity
+                        }
+                    }, 100); // Fade out interval
+                }, 2000); // Start fading after 2 seconds
+            }
+        }
+
+        // Function to shake the screen
+        function shakeScreen() {
+            const originalPosition = { x: render.canvas.style.transform.x || 0, y: render.canvas.style.transform.y || 0 };
+            let shakeDuration = 500; // Duration of shake in milliseconds
+            let shakeInterval = 50; // Interval between shakes
+            let shakeAmount = 10; // Amount of shake
+
+            const shake = setInterval(() => {
+                const xOffset = (Math.random() * shakeAmount) - (shakeAmount / 2);
+                const yOffset = (Math.random() * shakeAmount) - (shakeAmount / 2);
+                render.canvas.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+            }, shakeInterval);
+
+            setTimeout(() => {
+                clearInterval(shake);
+                render.canvas.style.transform = `translate(${originalPosition.x}px, ${originalPosition.y}px)`; // Reset position
+            }, shakeDuration);
+        }
+
+        // Add event listener for TNT block button
+        document.getElementById('addTNT').addEventListener('click', addTNT);
     </script>
 </body>
 </html>
