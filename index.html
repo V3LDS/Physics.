@@ -20,6 +20,175 @@
         input[type="range"] {
             margin: 5px;
         }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Multiplayer UI Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content button {
+            margin: 10px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-2px);
+        }
+
+        #join-form {
+            margin: 20px 0;
+        }
+
+        #join-form input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #room-code-display {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .room-code-box {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .room-code-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+
+        #room-code-text {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 10px 0;
+            color: #4CAF50;
+        }
+
+        .room-code-box button {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #copy-code {
+            background: #4CAF50;
+            color: white;
+        }
+
+        #leave-room {
+            background: #f44336;
+            color: white;
+        }
+
+        /* Other Players Cursors */
+        #other-cursors {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .other-cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff6b6b;
+            border-radius: 50%;
+            background: rgba(255, 107, 107, 0.3);
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+        }
+
+        .other-cursor::after {
+            content: attr(data-name);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -33,26 +202,101 @@
         <button id="addBouncyTriangle">Add Bouncy Triangle</button>
         <button id="addBouncyCloth">Add Bouncy Cloth</button>
         <button id="addWalls">Add Walls</button>
+        <button id="Crash me" onclick="crashTest()">Party Mode</button>
         <button id="scaleDown">Scale Down Shapes</button>
-        <button id="enableDraw">Enable Drawing Mode</button> <!-- New button for enabling drawing -->
-        <button id="disableDraw">Disable Drawing Mode</button> <!-- New button for disabling drawing -->
-        <button id="enableDelete">Enable Delete Mode</button> <!-- New button for enabling delete mode -->
-        <button id="disableDelete">Disable Delete Mode</button> <!-- New button for disabling delete mode -->
-        <button id="addTNT">Add TNT Block</button> <!-- New button for adding TNT block -->
-        <button id="addDelayedTNT">Add Delayed TNT Block</button> <!-- New button for adding delayed TNT block -->
-        <button id="addRagdoll">Add Ragdoll</button> <!-- New button for adding ragdoll -->
-        <button id="randomBackground">Random BackgroundWORKINPROGRESS</button> <!-- New button for random background -->
-        <button id="thingsToAdd">Things I Want to Add</button> <!-- New button for showing the list -->
-        <button id="addPoppinCandy">Add Poppin Candy TNT</button> <!-- New button for adding Poppin Candy TNT -->
+        <button id="enableDraw">Enable Drawing Mode</button>
+        <button id="disableDraw">Disable Drawing Mode</button>
+        <button id="enableDelete">Enable Delete Mode</button>
+        <button id="disableDelete">Disable Delete Mode</button>
+        <button id="addTNT">Add TNT Block</button>
+        <button id="addDelayedTNT">Add Delayed TNT Block</button>
+        <button id="addRagdoll">Add Ragdoll</button>
+        <button id="randomBackground">Random Background</button>
+        <button id="thingsToAdd">Things I Want to Add</button>
+        <button id="addPoppinCandy">Add Poppin Candy TNT</button>
+        <button id="addStar">Add Star</button>
+        <button id="addHexagon">Add Hexagon</button>
+        <button id="addPentagon">Add Pentagon</button>
+        <button id="addDiamond">Add Diamond</button>
+        <button id="addSpiral">Add Spiral</button>
+        <button id="addChain">Add Chain</button>
+        <button id="addSpring">Add Spring</button>
+        <button id="addFan">Add Fan</button>
+        <button id="addMagnet">Add Magnet</button>
+        <button id="addPortal">Add Portal</button>
+        <button id="addWater">Add Water</button>
+        <button id="addIce">Draw Ice</button>
+        <button id="addGlue">Add Glue</button>
+        <button id="dimensionChanger">Dimension Changer</button>
+        <button id="gravityMode">Gravity Mode</button>
+        <button id="timeSlow">Time Slow</button>
+        <button id="blackHole">Add Black Hole</button>
+        <button id="laserMode">Laser Mode</button>
+        <button id="multiplayer">Multiplayer</button>
         <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
         <label for="zoomSlider">Zoom Level</label>
         <button id="add1000Circles">Add 1000 Circles</button>
-    
     </div>
+    
+    <!-- Multiplayer UI -->
+    <div id="multiplayer-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Multiplayer Mode</h2>
+            <button id="create-room">Create Room</button>
+            <button id="join-room">Join Room</button>
+            <div id="join-form" class="hidden">
+                <input type="text" id="room-code" placeholder="Enter room code" maxlength="6">
+                <button id="join-submit">Join</button>
+    </div>
+            <button id="close-multiplayer">Close</button>
+        </div>
+    </div>
+    
+    <!-- Room Code Display -->
+    <div id="room-code-display" class="hidden">
+        <div class="room-code-box">
+            <h3>Room Code</h3>
+            <div id="room-code-text">ABC123</div>
+            <button id="copy-code">Copy</button>
+            <button id="leave-room">Leave Room</button>
+        </div>
+    </div>
+    
+    <!-- Other Players Cursors -->
+    <div id="other-cursors"></div>
+    
     <canvas id="world"></canvas>
     <!-- Include Matter.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script>
+        // Notification system
+        function showNotification(message, duration = 3000) {
+            // Remove any existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Hide and remove notification
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+
         // Alias Matter.js modules
         const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Body, Constraint, Composite } = Matter;
 
@@ -185,6 +429,11 @@
                 },
             });
             World.add(world, cube);
+            
+            // Sync to other players in multiplayer
+            if (isMultiplayerMode) {
+                syncNewObject(cube);
+            }
         }
 
         // Function to create a bouncy cube
@@ -361,6 +610,33 @@
             }, 50); // Add a circle every 50 milliseconds
         }
 
+        // Function for crash test - spawn 200,000 circles
+        function crashTest() {
+            let count = 0;
+            const totalCircles = 200000;
+            const interval = setInterval(() => {
+                if (count < totalCircles) {
+                    // Create circles with random properties
+                    const circle = Bodies.circle(
+                        Math.random() * window.innerWidth, 
+                        Math.random() * 100, 
+                        Math.random() * 10 + 5, 
+                        {
+                            restitution: Math.random() * 0.8 + 0.2,
+                            friction: Math.random() * 0.5,
+                            render: {
+                                fillStyle: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                            },
+                        }
+                    );
+                    World.add(world, circle);
+                    count++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1); // Add circles very quickly
+        }
+
         // Add a static floor
         const floor = Bodies.rectangle(window.innerWidth / 2, window.innerHeight - 20, window.innerWidth, 40, {
             isStatic: true,
@@ -446,6 +722,11 @@
         // Render loop
         (function renderLoop() {
             requestAnimationFrame(renderLoop);
+            
+            // Multiplayer sync
+            simulateMultiplayerSync();
+            trackLocalCursor();
+            
             Render.world(render);
         })();
 
@@ -735,10 +1016,134 @@
         // Add event listener for the ragdoll button
         document.getElementById('addRagdoll').addEventListener('click', addRagdoll); // Add this line to bind the button
 
+        // Cool new shapes functions
+        function addStar() {
+            const star = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 5, 40, {
+                restitution: 0.6,
+                friction: 0.3,
+                render: {
+                    fillStyle: '#FFD700',
+                    strokeStyle: '#FFA500',
+                    lineWidth: 2,
+                },
+            });
+            World.add(world, star);
+        }
+
+        function addHexagon() {
+            const hexagon = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 6, 35, {
+                restitution: 0.5,
+                friction: 0.4,
+                render: {
+                    fillStyle: '#9370DB',
+                },
+            });
+            World.add(world, hexagon);
+        }
+
+        function addPentagon() {
+            const pentagon = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 5, 30, {
+                restitution: 0.7,
+                friction: 0.3,
+                render: {
+                    fillStyle: '#FF69B4',
+                },
+            });
+            World.add(world, pentagon);
+        }
+
+        function addDiamond() {
+            const diamond = Bodies.polygon(window.innerWidth / 2, window.innerHeight / 2, 4, 35, {
+                restitution: 0.8,
+                friction: 0.2,
+                render: {
+                    fillStyle: '#00CED1',
+                },
+            });
+            World.add(world, diamond);
+        }
+
+        function addSpiral() {
+            const spiral = [];
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const radius = 20;
+            const turns = 3;
+            const points = 20;
+
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * turns * Math.PI * 2;
+                const currentRadius = radius + (i * 2);
+                const x = centerX + Math.cos(angle) * currentRadius;
+                const y = centerY + Math.sin(angle) * currentRadius;
+                
+                const particle = Bodies.circle(x, y, 3, {
+                    restitution: 0.5,
+                    friction: 0.3,
+                    render: {
+                        fillStyle: `hsl(${(i * 18) % 360}, 70%, 60%)`,
+                    },
+                });
+                spiral.push(particle);
+                World.add(world, particle);
+            }
+
+            // Connect particles with constraints
+            for (let i = 0; i < spiral.length - 1; i++) {
+                const constraint = Constraint.create({
+                    bodyA: spiral[i],
+                    bodyB: spiral[i + 1],
+                    stiffness: 0.1,
+                });
+                World.add(world, constraint);
+            }
+        }
+
+        function addChain() {
+            const chain = [];
+            const startX = window.innerWidth / 2;
+            const startY = window.innerHeight / 2 - 100;
+            const linkCount = 10;
+            const linkSize = 8;
+
+            for (let i = 0; i < linkCount; i++) {
+                const link = Bodies.circle(startX, startY + (i * 20), linkSize, {
+                    restitution: 0.3,
+                    friction: 0.5,
+                    render: {
+                        fillStyle: '#8B4513',
+                        strokeStyle: '#654321',
+                        lineWidth: 2,
+                    },
+                });
+                chain.push(link);
+                World.add(world, link);
+            }
+
+            // Connect links with constraints
+            for (let i = 0; i < chain.length - 1; i++) {
+                const constraint = Constraint.create({
+                    bodyA: chain[i],
+                    bodyB: chain[i + 1],
+                    stiffness: 0.8,
+                });
+                World.add(world, constraint);
+            }
+        }
+
         // Function to change background to a random color
         function changeBackground() {
-            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16); // Generate random hex color
-            document.body.style.backgroundColor = randomColor; // Change background color
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+                '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+                '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+                '#A9DFBF', '#F9E79F', '#D5A6BD', '#AED6F1', '#A3E4D7'
+            ];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.body.style.backgroundColor = randomColor;
+            
+            // Also change canvas background
+            render.options.background = randomColor;
         }
 
         // Add event listener for the random background button
@@ -835,6 +1240,927 @@
 
         // Add event listener for the Poppin Candy TNT button
         document.getElementById('addPoppinCandy').addEventListener('click', addPoppinCandy);
+
+        // Cool new interactive items functions
+        function addSpring() {
+            const spring = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 20, {
+                restitution: 2.0, // Super bouncy
+                friction: 0.1,
+                render: {
+                    fillStyle: '#FFD700',
+                    strokeStyle: '#FFA500',
+                    lineWidth: 3,
+                },
+                label: 'Spring',
+            });
+            World.add(world, spring);
+        }
+
+        function addFan() {
+            // Create fan base
+            const fanBase = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 60, 20, {
+                isStatic: true,
+                render: {
+                    fillStyle: '#696969',
+                    strokeStyle: '#2F4F4F',
+                    lineWidth: 2,
+                },
+                label: 'FanBase',
+            });
+
+            // Create fan blades (3 blades)
+            const fanBlades = [];
+            for (let i = 0; i < 3; i++) {
+                const angle = (i * 120) * Math.PI / 180; // 120 degrees apart
+                const blade = Bodies.rectangle(
+                    window.innerWidth / 2 + Math.cos(angle) * 30,
+                    window.innerHeight / 2 + Math.sin(angle) * 30,
+                    40, 8,
+                    {
+                        restitution: 0.1,
+                        friction: 0.1,
+                        render: {
+                            fillStyle: '#87CEEB',
+                            strokeStyle: '#4682B4',
+                            lineWidth: 2,
+                        },
+                        label: 'FanBlade',
+                    }
+                );
+                fanBlades.push(blade);
+            }
+
+            World.add(world, [fanBase, ...fanBlades]);
+
+            // Create wind effect
+            setInterval(() => {
+                const bodies = Composite.allBodies(world);
+                bodies.forEach(body => {
+                    if (body.label !== 'FanBase' && body.label !== 'FanBlade') {
+                        const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, fanBase.position));
+                        if (distance < 150) {
+                            const direction = Matter.Vector.normalise(Matter.Vector.sub(body.position, fanBase.position));
+                            const windForce = Matter.Vector.mult(direction, 0.01);
+                            Body.applyForce(body, body.position, windForce);
+                        }
+                    }
+                });
+            }, 100);
+        }
+
+
+
+        function addMagnet() {
+            const magnet = Bodies.rectangle(window.innerWidth / 2, window.innerHeight / 2, 40, 60, {
+                restitution: 0.1,
+                friction: 0.8,
+                render: {
+                    fillStyle: '#DC143C',
+                    strokeStyle: '#8B0000',
+                    lineWidth: 3,
+                },
+                label: 'Magnet',
+            });
+            World.add(world, magnet);
+
+            // Create magnetic field effect
+            setInterval(() => {
+                const bodies = Composite.allBodies(world);
+                bodies.forEach(body => {
+                    if (body !== magnet && body.label !== 'Magnet') {
+                        const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, magnet.position));
+                        if (distance < 200) {
+                            const direction = Matter.Vector.normalise(Matter.Vector.sub(magnet.position, body.position));
+                            const magneticForce = Matter.Vector.mult(direction, 0.02 / (distance / 50));
+                            Body.applyForce(body, body.position, magneticForce);
+                        }
+                    }
+                });
+            }, 50);
+        }
+
+        function addPortal() {
+            const portal1 = Bodies.circle(window.innerWidth / 2 - 100, window.innerHeight / 2, 30, {
+                isStatic: true, // Make portals static
+                restitution: 0.1,
+                friction: 0.1,
+                render: {
+                    fillStyle: 'rgba(138, 43, 226, 0.8)',
+                    strokeStyle: '#4B0082',
+                    lineWidth: 3,
+                },
+                label: 'Portal1',
+            });
+
+            const portal2 = Bodies.circle(window.innerWidth / 2 + 100, window.innerHeight / 2, 30, {
+                isStatic: true, // Make portals static
+                restitution: 0.1,
+                friction: 0.1,
+                render: {
+                    fillStyle: 'rgba(138, 43, 226, 0.8)',
+                    strokeStyle: '#4B0082',
+                    lineWidth: 3,
+                },
+                label: 'Portal2',
+            });
+
+            World.add(world, [portal1, portal2]);
+
+            // Portal teleportation effect with cooldown
+            const teleportedBodies = new Set();
+            setInterval(() => {
+                const bodies = Composite.allBodies(world);
+                bodies.forEach(body => {
+                    if (body.label !== 'Portal1' && body.label !== 'Portal2' && !teleportedBodies.has(body.id)) {
+                        const dist1 = Matter.Vector.magnitude(Matter.Vector.sub(body.position, portal1.position));
+                        const dist2 = Matter.Vector.magnitude(Matter.Vector.sub(body.position, portal2.position));
+                        
+                        if (dist1 < 35) {
+                            Body.setPosition(body, { x: portal2.position.x + 40, y: portal2.position.y });
+                            teleportedBodies.add(body.id);
+                            setTimeout(() => teleportedBodies.delete(body.id), 1000); // 1 second cooldown
+                        } else if (dist2 < 35) {
+                            Body.setPosition(body, { x: portal1.position.x - 40, y: portal1.position.y });
+                            teleportedBodies.add(body.id);
+                            setTimeout(() => teleportedBodies.delete(body.id), 1000); // 1 second cooldown
+                        }
+                    }
+                });
+            }, 50);
+        }
+
+        // Realistic water with fluid dynamics
+        function addWater() {
+            const waterParticles = [];
+            const waterCount = 50;
+            
+            for (let i = 0; i < waterCount; i++) {
+                const particle = Bodies.circle(
+                    window.innerWidth / 2 + (Math.random() - 0.5) * 100,
+                    window.innerHeight / 2 + (Math.random() - 0.5) * 50,
+                    4,
+                    {
+                        restitution: 0.1,
+                        friction: 0.1,
+                        density: 0.8,
+                        frictionAir: 0.01,
+                        render: {
+                            fillStyle: 'rgba(0, 191, 255, 0.8)',
+                            strokeStyle: '#0080FF',
+                            lineWidth: 1,
+                        },
+                        label: 'WaterParticle',
+                    }
+                );
+                waterParticles.push(particle);
+                World.add(world, particle);
+            }
+            
+            // Water physics simulation
+            setInterval(() => {
+                waterParticles.forEach(particle => {
+                    // Apply buoyancy to nearby objects
+                    const bodies = Composite.allBodies(world);
+                    bodies.forEach(body => {
+                        if (body !== particle && body.label !== 'WaterParticle') {
+                            const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, particle.position));
+                            if (distance < 20) {
+                                const buoyancy = Matter.Vector.mult({ x: 0, y: -0.005 }, body.mass);
+                                Body.applyForce(body, body.position, buoyancy);
+                            }
+                        }
+                    });
+                    
+                    // Water cohesion - particles attract each other
+                    waterParticles.forEach(otherParticle => {
+                        if (otherParticle !== particle) {
+                            const distance = Matter.Vector.magnitude(Matter.Vector.sub(particle.position, otherParticle.position));
+                            if (distance < 15 && distance > 5) {
+                                const direction = Matter.Vector.normalise(Matter.Vector.sub(otherParticle.position, particle.position));
+                                const cohesionForce = Matter.Vector.mult(direction, 0.001);
+                                Body.applyForce(particle, particle.position, cohesionForce);
+                            }
+                        }
+                    });
+                });
+            }, 50);
+        }
+
+        // Ice drawing functionality
+        let isIceDrawing = false;
+        let icePath = [];
+
+        function addIce() {
+            isIceDrawing = !isIceDrawing;
+            if (isIceDrawing) {
+                showNotification('Ice Drawing Mode: Click and drag to draw ice! Click again to exit.');
+                canvas.addEventListener('mousedown', startIceDrawing);
+                canvas.addEventListener('mousemove', drawIce);
+                canvas.addEventListener('mouseup', stopIceDrawing);
+            } else {
+                canvas.removeEventListener('mousedown', startIceDrawing);
+                canvas.removeEventListener('mousemove', drawIce);
+                canvas.removeEventListener('mouseup', stopIceDrawing);
+                icePath = [];
+            }
+        }
+
+        function startIceDrawing(event) {
+            if (!isIceDrawing) return;
+            isIceDrawing = true;
+            icePath = [];
+            const mousePos = getMousePos(event);
+            icePath.push(mousePos);
+        }
+
+        function drawIce(event) {
+            if (!isIceDrawing) return;
+            const mousePos = getMousePos(event);
+            icePath.push(mousePos);
+            
+            // Draw ice preview on canvas
+            const context = canvas.getContext('2d');
+            context.lineWidth = 8;
+            context.strokeStyle = 'rgba(173, 216, 230, 0.7)';
+            context.lineJoin = 'round';
+            context.beginPath();
+            if (icePath.length > 1) {
+                context.moveTo(icePath[icePath.length - 2].x, icePath[icePath.length - 2].y);
+                context.lineTo(mousePos.x, mousePos.y);
+            }
+            context.stroke();
+        }
+
+        function stopIceDrawing() {
+            if (!isIceDrawing) return;
+            isIceDrawing = false;
+            
+            if (icePath.length > 1) {
+                // Create ice segments along the path
+                for (let i = 0; i < icePath.length - 1; i++) {
+                    const start = icePath[i];
+                    const end = icePath[i + 1];
+                    const midX = (start.x + end.x) / 2;
+                    const midY = (start.y + end.y) / 2;
+                    const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+                    
+                    if (length > 5) { // Only create segments if they're long enough
+                        const ice = Bodies.rectangle(midX, midY, length, 8, {
+                            restitution: 0.1,
+                            friction: 0.01, // Very slippery like ice
+                            render: {
+                                fillStyle: 'rgba(173, 216, 230, 0.9)',
+                                strokeStyle: '#B0E0E6',
+                                lineWidth: 2,
+                            },
+                            label: 'Ice',
+                        });
+                        World.add(world, ice);
+                    }
+                }
+            }
+            
+            icePath = [];
+            clearCanvas();
+        }
+
+        // Glue functionality
+        let isGlueMode = false;
+        let glueTarget = null;
+
+        function addGlue() {
+            isGlueMode = !isGlueMode;
+            if (isGlueMode) {
+                canvas.addEventListener('click', handleGlueClick);
+            } else {
+                canvas.removeEventListener('click', handleGlueClick);
+                // Remove green border from any selected object
+                if (glueTarget) {
+                    glueTarget.render.strokeStyle = glueTarget.originalStrokeStyle || 'transparent';
+                    glueTarget.render.lineWidth = glueTarget.originalLineWidth || 0;
+                }
+                glueTarget = null;
+            }
+        }
+
+        function handleGlueClick(event) {
+            if (!isGlueMode) return;
+            
+            const mousePos = getMousePos(event);
+            const bodies = Composite.allBodies(world);
+            
+            bodies.forEach(body => {
+                if (Matter.Bounds.contains(body.bounds, mousePos)) {
+                    // Remove green border from previous selection
+                    if (glueTarget) {
+                        glueTarget.render.strokeStyle = glueTarget.originalStrokeStyle || 'transparent';
+                        glueTarget.render.lineWidth = glueTarget.originalLineWidth || 0;
+                    }
+                    
+                    // Select new object and add green border
+                    glueTarget = body;
+                    glueTarget.originalStrokeStyle = body.render.strokeStyle;
+                    glueTarget.originalLineWidth = body.render.lineWidth;
+                    glueTarget.render.strokeStyle = '#00FF00';
+                    glueTarget.render.lineWidth = 4;
+                }
+            });
+        }
+
+        // Check for collisions to automatically glue objects
+        function checkGlueCollisions() {
+            if (!isGlueMode || !glueTarget) return;
+            
+            const bodies = Composite.allBodies(world);
+            bodies.forEach(body => {
+                // Don't glue to static objects (ground, walls, trampolines, portals, fan bases, etc.)
+                if (body !== glueTarget && 
+                    !body.isStatic && 
+                    body.label !== 'GlueTarget' &&
+                    body.label !== 'Trampoline' &&
+                    body.label !== 'Portal1' &&
+                    body.label !== 'Portal2' &&
+                    body.label !== 'FanBase') {
+                    
+                    const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, glueTarget.position));
+                    const minDistance = (glueTarget.bounds.max.x - glueTarget.bounds.min.x) / 2 + 
+                                      (body.bounds.max.x - body.bounds.min.x) / 2 + 10;
+                    
+                    if (distance < minDistance) {
+                        // Create constraint to stick objects together
+                        const constraint = Constraint.create({
+                            bodyA: glueTarget,
+                            bodyB: body,
+                            stiffness: 1.0,
+                            length: 0,
+                            render: {
+                                visible: true,
+                                strokeStyle: '#8B4513',
+                                lineWidth: 3,
+                            }
+                        });
+                        World.add(world, constraint);
+                        
+                        // Remove green border and reset glue mode
+                        glueTarget.render.strokeStyle = glueTarget.originalStrokeStyle || 'transparent';
+                        glueTarget.render.lineWidth = glueTarget.originalLineWidth || 0;
+                        glueTarget = null;
+                        isGlueMode = false;
+                        canvas.removeEventListener('click', handleGlueClick);
+                    }
+                }
+            });
+        }
+
+        // Run glue collision check every frame
+        setInterval(checkGlueCollisions, 16); // ~60fps
+
+        // Dimension changer functionality
+        let isDimensionMode = false;
+
+        function dimensionChanger() {
+            isDimensionMode = !isDimensionMode;
+            if (isDimensionMode) {
+                showNotification('Dimension Mode: Click on an object to resize it! Use mouse wheel to change size.');
+                canvas.addEventListener('click', handleDimensionClick);
+                canvas.addEventListener('wheel', handleDimensionWheel);
+            } else {
+                canvas.removeEventListener('click', handleDimensionClick);
+                canvas.removeEventListener('wheel', handleDimensionWheel);
+            }
+        }
+
+        let selectedBody = null;
+
+        function handleDimensionClick(event) {
+            if (!isDimensionMode) return;
+            
+            const mousePos = getMousePos(event);
+            const bodies = Composite.allBodies(world);
+            
+            bodies.forEach(body => {
+                if (Matter.Bounds.contains(body.bounds, mousePos)) {
+                    selectedBody = body;
+                    alert('Object selected! Use mouse wheel to resize. Click again to deselect.');
+                    return;
+                }
+            });
+        }
+
+        function handleDimensionWheel(event) {
+            if (!isDimensionMode || !selectedBody) return;
+            
+            event.preventDefault();
+            const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1; // Shrink or grow
+            
+            // Scale the body
+            Body.scale(selectedBody, scaleFactor, scaleFactor);
+        }
+
+        // Gravity Mode - change gravity direction
+        let gravityMode = false;
+        let gravityDirection = 0;
+
+        function toggleGravityMode() {
+            gravityMode = !gravityMode;
+            if (gravityMode) {
+                gravityDirection = 0;
+                setInterval(() => {
+                    if (gravityMode) {
+                        gravityDirection += 0.02;
+                        engine.world.gravity.x = Math.cos(gravityDirection) * 0.8;
+                        engine.world.gravity.y = Math.sin(gravityDirection) * 0.8;
+                    }
+                }, 50);
+            } else {
+                engine.world.gravity.x = 0;
+                engine.world.gravity.y = 1;
+            }
+        }
+
+        // Time Slow Mode
+        let timeSlowMode = false;
+
+        function toggleTimeSlow() {
+            timeSlowMode = !timeSlowMode;
+            if (timeSlowMode) {
+                engine.timing.timeScale = 0.3; // Slow down time
+            } else {
+                engine.timing.timeScale = 1.0; // Normal time
+            }
+        }
+
+        // Black Hole - spawnable object
+        function addBlackHole() {
+            const blackHole = Bodies.circle(window.innerWidth / 2, window.innerHeight / 2, 30, {
+                isStatic: true,
+                render: {
+                    fillStyle: 'rgba(0, 0, 0, 0.3)',
+                    strokeStyle: '#000000',
+                    lineWidth: 3,
+                },
+                label: 'BlackHole',
+            });
+            World.add(world, blackHole);
+
+            // Black hole physics - attracts nearby objects
+            setInterval(() => {
+                const bodies = Composite.allBodies(world);
+                bodies.forEach(body => {
+                    if (body !== blackHole && body.label !== 'BlackHole') {
+                        const distance = Matter.Vector.magnitude(Matter.Vector.sub(body.position, blackHole.position));
+                        
+                        // Attraction field
+                        if (distance < 150) {
+                            const direction = Matter.Vector.normalise(Matter.Vector.sub(blackHole.position, body.position));
+                            const force = Matter.Vector.mult(direction, 0.05 / (distance / 50));
+                            Body.applyForce(body, body.position, force);
+                        }
+                        
+                        // Deletion zone - objects get deleted when they touch the core
+                        if (distance < 35) {
+                            World.remove(world, body);
+                        }
+                    }
+                });
+            }, 16);
+        }
+
+        // Laser Mode
+        let laserMode = false;
+
+        function toggleLaserMode() {
+            laserMode = !laserMode;
+            if (laserMode) {
+                canvas.addEventListener('click', fireLaser);
+            } else {
+                canvas.removeEventListener('click', fireLaser);
+            }
+        }
+
+        function fireLaser(event) {
+            if (!laserMode) return;
+            
+            const mousePos = getMousePos(event);
+            const laserParticle = Bodies.circle(mousePos.x, mousePos.y, 2, {
+                restitution: 0.1,
+                friction: 0.1,
+                render: {
+                    fillStyle: '#FF0000',
+                    strokeStyle: '#FF4500',
+                    lineWidth: 1,
+                },
+                label: 'Laser',
+            });
+            
+            // Apply high velocity
+            Body.setVelocity(laserParticle, { x: 0, y: -15 });
+            World.add(world, laserParticle);
+            
+            // Remove laser after 2 seconds
+            setTimeout(() => {
+                World.remove(world, laserParticle);
+            }, 2000);
+        }
+
+        // Add event listeners for all the new cool shapes
+        document.getElementById('addStar').addEventListener('click', addStar);
+        document.getElementById('addHexagon').addEventListener('click', addHexagon);
+        document.getElementById('addPentagon').addEventListener('click', addPentagon);
+        document.getElementById('addDiamond').addEventListener('click', addDiamond);
+        document.getElementById('addSpiral').addEventListener('click', addSpiral);
+        document.getElementById('addChain').addEventListener('click', addChain);
+
+        // Add event listeners for all the new interactive items
+        document.getElementById('addSpring').addEventListener('click', addSpring);
+        document.getElementById('addFan').addEventListener('click', addFan);
+        document.getElementById('addMagnet').addEventListener('click', addMagnet);
+        document.getElementById('addPortal').addEventListener('click', addPortal);
+        document.getElementById('addWater').addEventListener('click', addWater);
+        document.getElementById('addIce').addEventListener('click', addIce);
+        document.getElementById('addGlue').addEventListener('click', addGlue);
+        document.getElementById('dimensionChanger').addEventListener('click', dimensionChanger);
+        document.getElementById('gravityMode').addEventListener('click', toggleGravityMode);
+        document.getElementById('timeSlow').addEventListener('click', toggleTimeSlow);
+        document.getElementById('blackHole').addEventListener('click', addBlackHole);
+        document.getElementById('laserMode').addEventListener('click', toggleLaserMode);
+        document.getElementById('multiplayer').addEventListener('click', showMultiplayerModal);
+        
+        // Multiplayer UI event listeners
+        document.getElementById('create-room').addEventListener('click', createRoom);
+        document.getElementById('join-room').addEventListener('click', () => {
+            document.getElementById('join-form').classList.remove('hidden');
+        });
+        document.getElementById('join-submit').addEventListener('click', joinRoom);
+        document.getElementById('close-multiplayer').addEventListener('click', hideMultiplayerModal);
+        document.getElementById('copy-code').addEventListener('click', copyRoomCode);
+        document.getElementById('leave-room').addEventListener('click', leaveRoom);
+        
+        // Allow Enter key to join room
+        document.getElementById('room-code').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                joinRoom();
+            }
+        });
+
+        // Multiplayer System
+        let isMultiplayerMode = false;
+        let currentRoomCode = null;
+        let localPeerConnection;
+        let localCursorId;
+        let connectedPeers = new Map();
+        let signalingServer = null;
+        let isHost = false;
+        let playerName = 'Player' + Math.floor(Math.random() * 1000);
+        
+        // Simple signaling server simulation (in real app, this would be a separate server)
+        class SignalingServer {
+            constructor() {
+                this.rooms = new Map();
+                this.connections = new Map();
+            }
+            
+            generateRoomCode() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < 6; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+            
+            createRoom(roomCode, hostId) {
+                this.rooms.set(roomCode, {
+                    host: hostId,
+                    players: new Set([hostId]),
+                    createdAt: Date.now()
+                });
+                return roomCode;
+            }
+            
+            joinRoom(roomCode, playerId) {
+                const room = this.rooms.get(roomCode);
+                if (room) {
+                    room.players.add(playerId);
+                    return true;
+                }
+                return false;
+            }
+            
+            leaveRoom(roomCode, playerId) {
+                const room = this.rooms.get(roomCode);
+                if (room) {
+                    room.players.delete(playerId);
+                    if (room.players.size === 0) {
+                        this.rooms.delete(roomCode);
+                    }
+                }
+            }
+            
+            getRoomPlayers(roomCode) {
+                const room = this.rooms.get(roomCode);
+                return room ? Array.from(room.players) : [];
+            }
+        }
+        
+        // Initialize signaling server
+        signalingServer = new SignalingServer();
+        
+        // Multiplayer Functions
+        function showMultiplayerModal() {
+            document.getElementById('multiplayer-modal').classList.remove('hidden');
+        }
+        
+        function hideMultiplayerModal() {
+            document.getElementById('multiplayer-modal').classList.add('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+        }
+        
+        function createRoom() {
+            const roomCode = signalingServer.generateRoomCode();
+            currentRoomCode = roomCode;
+            isHost = true;
+            isMultiplayerMode = true;
+            
+            // Show room code
+            document.getElementById('room-code-text').textContent = roomCode;
+            document.getElementById('room-code-display').classList.remove('hidden');
+            
+            // Create room in signaling server
+            signalingServer.createRoom(roomCode, playerName);
+            
+            hideMultiplayerModal();
+            showNotification(`Room created! Code: ${roomCode}`, 5000);
+            
+            // Start listening for connections
+            startHosting();
+        }
+        
+        function joinRoom() {
+            const roomCode = document.getElementById('room-code').value.toUpperCase();
+            if (roomCode.length !== 6) {
+                showNotification('Please enter a valid 6-character room code', 3000);
+                return;
+            }
+            
+            if (signalingServer.joinRoom(roomCode, playerName)) {
+                currentRoomCode = roomCode;
+                isHost = false;
+                isMultiplayerMode = true;
+                
+                hideMultiplayerModal();
+                showNotification(`Joined room ${roomCode}!`, 3000);
+                
+                // Connect to host
+                connectToHost(roomCode);
+            } else {
+                showNotification('Room not found!', 3000);
+            }
+        }
+        
+        function leaveRoom() {
+            if (currentRoomCode) {
+                signalingServer.leaveRoom(currentRoomCode, playerName);
+                
+                // Close all peer connections
+                connectedPeers.forEach(peer => {
+                    peer.close();
+                });
+                connectedPeers.clear();
+                
+                // Hide room UI
+                document.getElementById('room-code-display').classList.add('hidden');
+                
+                // Clear other cursors
+                document.getElementById('other-cursors').innerHTML = '';
+                
+                currentRoomCode = null;
+                isMultiplayerMode = false;
+                isHost = false;
+                
+                showNotification('Left room', 2000);
+            }
+        }
+        
+        function copyRoomCode() {
+            navigator.clipboard.writeText(currentRoomCode).then(() => {
+                showNotification('Room code copied!', 2000);
+            });
+        }
+        
+        function startHosting() {
+            // Host listens for new connections
+            // In a real implementation, this would use WebSocket or similar
+            console.log('Hosting room:', currentRoomCode);
+        }
+        
+        function connectToHost(roomCode) {
+            // Connect to host
+            // In a real implementation, this would establish WebRTC connection
+            console.log('Connecting to room:', roomCode);
+        }
+
+        // Function to initialize WebRTC
+        function initWebRTC() {
+            localCursorId = Math.random().toString(36).substr(2, 9); // Generate a unique ID for the player
+            localPeerConnection = new RTCPeerConnection();
+
+            // Create a data channel for sending cursor positions
+            const dataChannel = localPeerConnection.createDataChannel('cursorChannel');
+            dataChannel.onopen = () => {
+                console.log('Data channel is open');
+            };
+
+            dataChannel.onmessage = (event) => {
+                const cursorData = JSON.parse(event.data);
+                if (cursorData.id !== localCursorId) {
+                    updateCursor(cursorData);
+                }
+            };
+
+            localPeerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('ICE Candidate:', event.candidate);
+                    // Send the candidate to the other peer (manual sharing)
+                }
+            };
+
+            // Create an offer
+            localPeerConnection.createOffer().then(offer => {
+                return localPeerConnection.setLocalDescription(offer);
+            }).then(() => {
+                console.log('Offer created:', localPeerConnection.localDescription);
+                // Share the offer with the other peer (manual sharing)
+            });
+        }
+
+        // Function to handle incoming connection
+        function handleIncomingConnection(offer) {
+            localPeerConnection = new RTCPeerConnection();
+
+            localPeerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('ICE Candidate:', event.candidate);
+                    // Send the candidate to the other peer (manual sharing)
+                }
+            };
+
+            localPeerConnection.ondatachannel = (event) => {
+                const receiveChannel = event.channel;
+                receiveChannel.onmessage = (event) => {
+                    const cursorData = JSON.parse(event.data);
+                    if (cursorData.id !== localCursorId) {
+                        updateCursor(cursorData);
+                    }
+                };
+            };
+
+            localPeerConnection.setRemoteDescription(new RTCSessionDescription(offer)).then(() => {
+                return localPeerConnection.createAnswer();
+            }).then(answer => {
+                return localPeerConnection.setLocalDescription(answer);
+            }).then(() => {
+                console.log('Answer created:', localPeerConnection.localDescription);
+                // Share the answer with the other peer (manual sharing)
+            });
+        }
+
+        // Function to update cursor position
+        function updateCursor(data) {
+            if (!cursors[data.id]) {
+                const cursorElement = document.createElement('div');
+                cursorElement.className = 'other-cursor';
+                cursorElement.setAttribute('data-name', data.id);
+                document.getElementById('other-cursors').appendChild(cursorElement);
+                cursors[data.id] = cursorElement;
+            }
+            cursors[data.id].style.left = data.x + 'px';
+            cursors[data.id].style.top = data.y + 'px';
+        }
+        
+        // Simplified Multiplayer System (simulating real-time sync)
+        function simulateMultiplayerSync() {
+            if (!isMultiplayerMode) return;
+            
+            // Simulate other players' cursors
+            if (Math.random() < 0.1) { // 10% chance each frame
+                const fakePlayerId = 'player' + Math.floor(Math.random() * 100);
+                const fakeX = Math.random() * window.innerWidth;
+                const fakeY = Math.random() * window.innerHeight;
+                updateOtherCursor(fakePlayerId, fakeX, fakeY);
+            }
+            
+            // Simulate object synchronization
+            if (isHost && Math.random() < 0.05) { // 5% chance each frame
+                syncObjectsToClients();
+            }
+        }
+        
+        function updateOtherCursor(playerId, x, y) {
+            let cursor = document.getElementById(`cursor-${playerId}`);
+            if (!cursor) {
+                cursor = document.createElement('div');
+                cursor.id = `cursor-${playerId}`;
+                cursor.className = 'other-cursor';
+                cursor.setAttribute('data-name', playerId);
+                document.getElementById('other-cursors').appendChild(cursor);
+            }
+            
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
+            
+            // Remove cursor after 5 seconds of no updates
+            clearTimeout(cursor.timeout);
+            cursor.timeout = setTimeout(() => {
+                if (cursor && cursor.parentNode) {
+                    cursor.parentNode.removeChild(cursor);
+                }
+            }, 5000);
+        }
+        
+        function syncObjectsToClients() {
+            // In a real implementation, this would send object data to all connected clients
+            const objects = Composite.allBodies(world);
+            const syncData = objects.map(body => ({
+                id: body.id,
+                position: body.position,
+                velocity: body.velocity,
+                angle: body.angle,
+                angularVelocity: body.angularVelocity
+            }));
+            
+            // Simulate receiving sync data
+            if (Math.random() < 0.3) {
+                receiveObjectSync(syncData);
+            }
+        }
+        
+        function receiveObjectSync(syncData) {
+            // Apply synchronized object data
+            syncData.forEach(data => {
+                const body = Composite.allBodies(world).find(b => b.id === data.id);
+                if (body) {
+                    Body.setPosition(body, data.position);
+                    Body.setVelocity(body, data.velocity);
+                    Body.setAngle(body, data.angle);
+                    Body.setAngularVelocity(body, data.angularVelocity);
+                }
+            });
+        }
+        
+        // Track local cursor for multiplayer
+        function trackLocalCursor() {
+            if (!isMultiplayerMode) return;
+            
+            // Send cursor position to other players
+            const cursorData = {
+                type: 'cursor',
+                id: playerName,
+                x: mouse.x,
+                y: mouse.y
+            };
+            
+            // In a real implementation, this would send via WebRTC
+            // For now, we'll simulate it locally
+            updateOtherCursor(playerName, mouse.x, mouse.y);
+        }
+        
+        // Sync new objects to other players
+        function syncNewObject(body) {
+            if (!isMultiplayerMode || !isHost) return;
+            
+            const objectData = {
+                type: 'newObject',
+                id: body.id,
+                position: body.position,
+                velocity: body.velocity,
+                angle: body.angle,
+                angularVelocity: body.angularVelocity,
+                shape: body.label || 'rectangle',
+                size: body.bounds ? {
+                    width: body.bounds.max.x - body.bounds.min.x,
+                    height: body.bounds.max.y - body.bounds.min.y
+                } : { width: 60, height: 60 },
+                render: body.render
+            };
+            
+            // In a real implementation, this would send via WebRTC
+            console.log('Syncing new object:', objectData);
+        }
+
+        // Function to send cursor position
+        function sendCursorPosition(x, y) {
+            const cursorData = { id: localCursorId, x, y };
+            const dataChannel = localPeerConnection.dataChannel;
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify(cursorData));
+            }
+        }
+
+        // Event listener for mouse movement
+        document.addEventListener('mousemove', (event) => {
+            sendCursorPosition(event.clientX, event.clientY);
+        });
     </script>
 </body>
 </html>
